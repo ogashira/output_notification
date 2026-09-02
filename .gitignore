@@ -1,0 +1,17 @@
+__init__.py
+__pycache__
+*.py~
+*.un~
+*.ini
+*.ini~
+*.xlsx
+./yaml/
+*.yaml
+*.yml
+*.bat
+*.png
+*.jpg
+*.pdf
+*.txt
+pngs/
+*.json
