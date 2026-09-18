@@ -1,6 +1,6 @@
 import pytest
 # src フォルダから Calc クラスをインポート
-from src.calc import Calc
+from calc import Calc
 
 # --- 1. テスト用の共通準備（Fixture） ---
 @pytest.fixture

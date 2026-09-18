@@ -26,9 +26,9 @@ class FetchHinban(IFetchDataForList):
         cursor = self.cnxn.cursor()
 
         sqlQuery = ("SELECT HinHinCD AS 'hinban',"
-                    " HinTniCD AS 'tni',"
+                    " HinNam AS 'hin_name',"
                     " HinTju AS 'tju',"
-                    " HinFree18 AS 'orderOrstock'"
+                    " HinFree18 AS 'order_or_stock'"
                     " From dbo.MHINCD"
                     " WHERE HinSeiKBN = '7'"
                     " ORDER BY HinHinCD"
@@ -54,39 +54,6 @@ class FetchHinban(IFetchDataForList):
 
         return columns, data_list
 
-
-    def _kg_to_cans(self, col: List[str], 
-                             data: List[List[Any]])-> List[List[Any]]:
-
-        def get_idx(col: List[str], col_name: str)-> int:
-            idx: int = -1
-            if not col:
-                return idx
-            if not col_name:
-                return idx
-
-            for i, code in enumerate(col):
-                if code == col_name:
-                    idx = i
-                    break
-            else:
-                idx = -1
-            
-            return idx
-
-        tani_idx = get_idx(col, '受注単位')
-        qty_idx = get_idx(col, 'cans')
-        Mqty_idx = get_idx(col, '振替元数量')
-
-        if Mqty_idx != len(col)-1:
-            raise Exception('振替元数量が最終要素になってません')
-            
-        for line in data:
-            if line[tani_idx] == 'KG':
-                line[qty_idx] = line[Mqty_idx]
-                del line[Mqty_idx]
-
-        return data
         
 
 class FetchMukesaki(IFetchDataForList):

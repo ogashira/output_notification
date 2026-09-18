@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
+import re
 from tkinter import ttk, messagebox
 from typing import List, Dict, Any
-import flow
-import re
 
 # グローバル変数の宣言（各関数からアクセスするため）
 root = None
@@ -123,14 +122,18 @@ def on_select(event=None):
 
 def check_on_leave(event):
     """別の作業に移ろうとした（フォーカスが外れた）時のチェック処理"""
-    # 1. 新しくフォーカスが移った先のウィジェットを取得
-    focused_widget = root.focus_get()
+    # 1. 新しくフォーカスが移った先のウィジェット名を取得
+    # root.focus_get() はドロップダウンリスト(popdown)にフォーカスがある際に
+    # Tkinterの管理外のため KeyError: 'popdown' が発生します。
+    # そのため root.tk.call('focus') で Tcl のウィジェット名文字列を安全に取得します。
+    try:
+        focused_widget_name = str(root.tk.call('focus'))
+    except (KeyError, tk.TclError):
+        return
 
-    # 2. フォーカス移動先が「ドロップダウンリスト（popdown）」だった場合はスルーする
-    if focused_widget:
-        widget_name = str(focused_widget)
-        # Tkinterのドロップダウンリストは名前に 'popdown' や 'combobox' を含みます
-        if 'popdown' in widget_name or focused_widget == combobox:
+    # 2. フォーカス移動先が「ドロップダウンリスト（popdown）」や combobox 自身だった場合はスルーする
+    if focused_widget_name:
+        if 'popdown' in focused_widget_name or focused_widget_name == str(combobox):
             return     # 絞り込み中なので警告を出さない
 
     # 3. 本当に別の入力欄やボタンに移った場合のみチェックを実行
@@ -269,7 +272,8 @@ def press_start():
         return
 
     try:
-        flow.start( ui_infos)
+        from flow import Flow
+        Flow.start( ui_infos)
 
         root.destroy()
     except Exception as e:
@@ -383,7 +387,3 @@ def run(hinbans: List[str], mukesakis_export: List[str],
     init_visibility()
     
     root.mainloop()
-
-if __name__ == "__main__":
-    # テスト用
-    run(["PART-01", "PART-02-EX", "PART-03"])

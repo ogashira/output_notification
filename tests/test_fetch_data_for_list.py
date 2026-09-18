@@ -1,6 +1,6 @@
 import pytest
 
-from src.fetch_data_for_list import FetchCans
+from fetch_data_for_list import FetchCans
 
 @pytest.fixture
 def fetch_cans():

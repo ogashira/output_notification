@@ -1,10 +1,10 @@
 from typing import Dict, TYPE_CHECKING, Any, List
 import platform
 import sys
+from fetch_data_for_list import IFetchDataForList
 
 # 実行時にはインポートせず、型チェックの為だけに書く
 if TYPE_CHECKING:
-    from fetch_data import IFetchData
     from fetch_data_for_list import FetchCans
 
 
@@ -51,7 +51,7 @@ class InstanceFactory:
     def get_sql_server_effit(cls) -> None:
         if cls._sqlServerEffit is None:
             cls._setup_sql_path()
-            from sql_server import SqlServer as SqlServerEffit
+            from sql_server_effit_addmin import SqlServer as SqlServerEffit
             cls._sqlServerEffit = SqlServerEffit()
             cls._cnxn_effit = cls._sqlServerEffit.get_cnxn()
 
@@ -64,7 +64,7 @@ class InstanceFactory:
 
 
     @classmethod
-    def get_fetchHinban(cls) -> 'IFetchData':
+    def get_fetchHinban(cls) -> IFetchDataForList:
         from fetch_data_for_list import FetchHinban
         ins_name: str = 'fetchHinban'
         if ins_name not in cls._instances:
@@ -74,7 +74,7 @@ class InstanceFactory:
 
 
     @classmethod
-    def get_fetchMukesaki(cls) -> 'IFetchData':
+    def get_fetchMukesaki(cls) -> IFetchDataForList:
         from fetch_data_for_list import FetchMukesaki
         ins_name: str = 'fetchMukesaki'
         if ins_name not in cls._instances:
@@ -84,7 +84,7 @@ class InstanceFactory:
 
 
     @classmethod
-    def get_fetchNonyusaki(cls) -> 'IFetchData':
+    def get_fetchNonyusaki(cls) -> IFetchDataForList:
         from fetch_data_for_list import FetchNonyusaki
         ins_name: str = 'fetchNonyusaki'
         if ins_name not in cls._instances:
@@ -94,7 +94,7 @@ class InstanceFactory:
 
 
     @classmethod
-    def get_fetchSeihinLabel(cls) -> 'IFetchData':
+    def get_fetchSeihinLabel(cls) -> IFetchDataForList:
         from fetch_data_for_list import FetchSeihinLabel
         ins_name: str = 'fetchSeihinLabel'
         if ins_name not in cls._instances:
@@ -104,7 +104,7 @@ class InstanceFactory:
 
 
     @classmethod
-    def get_fetchTokui(cls) -> 'IFetchData':
+    def get_fetchTokui(cls) -> IFetchDataForList:
         from fetch_data_for_list import FetchTokui
         ins_name: str = 'fetchTokui'
         if ins_name not in cls._instances:
@@ -114,7 +114,7 @@ class InstanceFactory:
 
 
     @classmethod
-    def get_fetchCoaMukesaki(cls) -> 'IFetchData':
+    def get_fetchCoaMukesaki(cls) -> IFetchDataForList:
         from fetch_data_for_list import FetchCoaMukesaki
         ins_name: str = 'fetchCoaFormat'
         if ins_name not in cls._instances:

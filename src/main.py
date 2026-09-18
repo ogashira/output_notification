@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-import flow
+from flow import Flow
 
 def main():
     """メインエントリーポイント"""
-    flow.ui_run()
+    Flow.ui_run()
 
 if __name__ == "__main__":
     main()

@@ -137,6 +137,8 @@
         1. n&h&m_modify.xlsxのT0210_THB01_hinban, T0210_THB02_hinban があるか調査。 
         1. 全てあればスルー。
         1. なければ、tokuiCD, nonyuCD(GZK01~GZK07), hinban, hinName, mksk(n&h&m特有データ)を入力する。
+        1. 向け先に関しては、前例がある場合は前例を入力。無い場合は'GZK_納入先'を入力。
+            1. GZK01からアルファベットと数字を分けて、アルファベットを取得する。
     1. 出荷時添付リスト.xlsxに必要な情報があるかを調べる。
         1. 輸出製品の場合はスルー。
         1. ui_infosのtokuiCD,nonyuCD,hinban,formatが一致したらスルー。
@@ -172,31 +174,30 @@ title: アウトプット連絡表
 classDiagram
 direction TB 
 
+class IUpdateMaster{
+    <<interface>>
+    + update_master():None*
+}
+class IInsertMaster{
+    <<interface>>
+    + insert_master():None*
+}
 class HinbanMaster{
     - hiban_master_data:List[List[str]]
     - hinban:str
     - hinname:str
     - order_or_stocked:str
-    + update_hinbanmaster():None
+    + update_outputmaster():None
 }
-class Mukesaki{
-    - mukesaki_kbn:str
-    - mukesaki_name:str
-    - tokuiCD:str
-    + kbn_to_name():str
-    + name_to_kbn():str
+class CanForExport{
+    - can_hinban: str
+    - is_fire_print: bool
+    - is_fish_print: bool
 }
-class Nonyusaki{
-    - nonyusaki_kbn:str
-    - nonyusaki_name:str
-    + kbn_to_name():str
-    + name_to_kbn():str
-}
-class ProductLabel{
-    - label_kbn:str
-    - label_name:str
-    + kbn_to_name():str
-    + name_to_kbn():str
+class GhsDb{
+    - class_rank: str
+    - pict_fire: str
+    - pict_fish: str
 }
 class LabelIdentification{
     - mukesaki_kbn:str
@@ -209,12 +210,14 @@ class LabelIdentification{
 }
 class NHM{
     - nhm_data:List[List[str]]
-    - hinban_master:HinbanMaster
     - tokuiCD:str
     - nonyuCDs:List~str~
+    - hinban: str
+    - hin_name: str
     - nhm_mukesaki:str
     - label_identification:LabelIdentification
-    + insert_nhm():None
+    + update_outputmaster():None
+    + insert_outputmaster():None
 }
 class AttachedList{
     - attached_list_data:List[List[str]]
@@ -224,18 +227,44 @@ class AttachedList{
     - hinban:str
     - hinName:str
     - issuing_department:str
-    - format:str
+    - coa_format:str
     - recipient_name:str
+    - bikou: str
     + isexist_attachedlist():bool 
-    + insert_attachedlist():None
-    + update_attachedlist():None
+    + update_outputmaster():None
+    + insert_outputmaster():None
 }
 class LabelDbDomesticProduct{
-    - tokuiCD:str
-    
+    - mukesaki_kbns:List~str~
+    - hinban: str
+    - label_kbn: str
+    + update_outputmaster():None
+    + insert_outputmaster():None
 }
 class LabelDbExportProduct{
-    - tokuiCD:str
+    - mukesaki_kbn: str
+    - nonyusaki_kbn: str
+    - unsou_kbns: List~str~
+    - hinban: str
+    - label_kbn: str
+    - label_fish_kbn: str
+    - label_fire_kbn: str
+    + update_outputmaster():None
+    + insert_outputmaster():None
 }
+
+IUpdateMaster <|.. HinbanMaster
+IUpdateMaster <|.. AttachedList
+IInsertMaster <|.. AttachedList
+IUpdateMaster <|.. LabelDbDomesticProduct
+IInsertMaster <|.. LabelDbDomesticProduct
+IUpdateMaster <|.. LabelDbExportProduct
+IInsertMaster <|.. LabelDbExportProduct
+IUpdateMaster <|.. NHM
+IInsertMaster <|.. NHM
+
+NHM o-- LabelIdentification
+LabelDbExportProduct o-- CanForExport
+CanForExport o-- GhsDb
 
 
