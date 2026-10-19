@@ -40,7 +40,7 @@
 | :---:                         | :---       | :---                     | :---   |
 | 受注Check(休日表)             | effitA 稼働日カレンダ</br>東洋=工場:@@@@@</br> 運送屋=工場:@0001,部門:DUMMY | MCALEN.CalFlg: "1" (休日) | 1回/年 |
 | 受注Check(リードタイム)       | effitA 発送先別運送距離マスタ | MDESTN_U2002.DesLeadTime(int) | 得意先増えた時 |
-| **受注Check(向け先、製品)**   | \\192.168.1.247\共有\受注check\master | **n&h&m_modify.csv** | **輸出の新製品ができた時** |
+| **受注Check(向け先、製品)**   | \\192.168.1.247\共有\受注check\master | **n&h&m_modify.xlsx** | **輸出の新製品ができた時** |
 | **出荷Robot(受注見込み)**     | effitA 品番マスタ.ユーザ個別項目.受注見込区分</br>2:見込製品, 1:受注製品 | **品番マスター**<br>MHINCD.HinFree18(str) "2","1" | **新製品ができた時** |
 | **出荷Robot(仕入製品重量)**   | effitA 品番マスタ.ユーザ個別項目.仕入製品重量(kg) | **品番マスター**<br>MHINCD.HinFree19(str) "16.5" |**仕入製品が増えた時** |
 | 出荷Robot(次回請求しない)     | effitA 得意先マスタ.売上日基準請求区分=1:しない | MTOKUI.TokFree3(str) "1" | 次回請求しない得意先ができた時 |
@@ -86,7 +86,7 @@
         - 輸出用缶: G-UN-18L-RYL
 
 1. データ登録先
-    - n&h&m_modify.csv
+    - n&h&m_modify.xlsx
         - tokuiCD, nonyuCD(GZK01~GZK07), hinban, hinName, mksk(n&h&m特有データ)
     - 品番マスター
         - HinHinCD, HinFree18(受注:"1", 見込:"2"), HinNam
@@ -105,7 +105,7 @@
         - MST_CD=LBL_SAKANA_KBN, DTL_CD, DTL_NM -> {"◯":"01", "F":"02"}
         - MST_CD=LBL_FIRE_KBN, DTL_CD, DTL_NM -> {"ｸﾗｽ9":"01", "ｸﾗｽ6.1":"02", "ｸﾗｽ4.1:"03", "◯":"04"}
 
-    - n&h&m_modify.csv登録用
+    - n&h&m_modify.xlsx登録用
         - ラベル識別一覧 (TM_LBL_SB) 
             - MKSK_KBN, NNSK_KBN, NNSK_STR, NNSK_NO_MIN, NNSK_NO_MAX WHERE MKSK_KBN="04" AND NNSK_KBN="03" <br>-> {"T0210":["THB01", "THB02"]}
     - 品番マスター登録用
@@ -128,15 +128,19 @@
     1. アウトプット連絡表から、必要な情報をui画面で入力する。uiで入力した情報をui_infosとする。
     1. 品番マスターに品番とHinFree18にデータがあるかを調べる。
         1. 品番マスターに品番登録されていなかったら処理を中止する。
+        1. HinbanMasterのインスタンスを作成する。
         1. 品番とHinFree18のデータがui_infosの受注、見込みと一致したらスルー。
         1. 無い、または一致しない場合は、品番マスターに入力する。
-    1. n&h&m_modify.csvに品番のデータがあるかを調べる。
+    1. n&h&m_modify.xlsxに品番のデータがあるかを調べる。
         1. 国内製品の場合はスルー。
         1. ラベル識別一覧(TM_LBL_SB)のデータを取得する。
+        1. LabelIdentificationのインスタンスを作成する。
         1. Dict[str,List[str]]に変換する。{"T0210":["THB01", "THB02"],....}
+        1. Nhmのインスタンスを作成する。
         1. n&h&m_modify.xlsxのT0210_THB01_hinban, T0210_THB02_hinban があるか調査。 
         1. 全てあればスルー。
-        1. なければ、tokuiCD, nonyuCD(GZK01~GZK07), hinban, hinName, mksk(n&h&m特有データ)を入力する。
+        1. なければ、tokuiCD, nonyuCD(GZK01~GZK07), hinban, hinName, mksk(n&h&m特有データ)を入力する。insert
+        1. 一致していないレコードはUpdate
         1. 向け先に関しては、前例がある場合は前例を入力。無い場合は'GZK_納入先'を入力。
             1. GZK01からアルファベットと数字を分けて、アルファベットを取得する。
     1. 出荷時添付リスト.xlsxに必要な情報があるかを調べる。
@@ -178,26 +182,19 @@ class IUpdateMaster{
     <<interface>>
     + update_master():None*
 }
-class IInsertMaster{
-    <<interface>>
-    + insert_master():None*
-}
 class HinbanMaster{
     - hiban_master_data:List[List[str]]
     - hinban:str
     - hinname:str
     - order_or_stocked:str
-    + update_outputmaster():None
+    + update_master():None
 }
-class CanForExport{
-    - can_hinban: str
-    - is_fire_print: bool
-    - is_fish_print: bool
-}
-class GhsDb{
-    - class_rank: str
-    - pict_fire: str
-    - pict_fish: str
+class CalcFireAndFishKubun{
+    - ghs_data:List[str]
+    - is_exist_fire_print: bool
+    - is_exist_fish_print: bool
+    + calc_fire_kubun():str
+    + calc_fish_kubun():str
 }
 class LabelIdentification{
     - mukesaki_kbn:str
@@ -208,7 +205,7 @@ class LabelIdentification{
     - tokuiCD:str
     + create_nonyuCDs()List~str~
 }
-class NHM{
+class Nhm{
     - nhm_data:List[List[str]]
     - tokuiCD:str
     - nonyuCDs:List~str~
@@ -216,8 +213,7 @@ class NHM{
     - hin_name: str
     - nhm_mukesaki:str
     - label_identification:LabelIdentification
-    + update_outputmaster():None
-    + insert_outputmaster():None
+    + update_master():None
 }
 class AttachedList{
     - attached_list_data:List[List[str]]
@@ -231,17 +227,15 @@ class AttachedList{
     - recipient_name:str
     - bikou: str
     + isexist_attachedlist():bool 
-    + update_outputmaster():None
-    + insert_outputmaster():None
+    + update_master():None
 }
-class LabelDbDomesticProduct{
+class LabelDbForDomestic{
     - mukesaki_kbns:List~str~
     - hinban: str
     - label_kbn: str
-    + update_outputmaster():None
-    + insert_outputmaster():None
+    + update_master():None
 }
-class LabelDbExportProduct{
+class LabelDbForExport{
     - mukesaki_kbn: str
     - nonyusaki_kbn: str
     - unsou_kbns: List~str~
@@ -249,22 +243,16 @@ class LabelDbExportProduct{
     - label_kbn: str
     - label_fish_kbn: str
     - label_fire_kbn: str
-    + update_outputmaster():None
-    + insert_outputmaster():None
+    + update_master():None
 }
 
 IUpdateMaster <|.. HinbanMaster
 IUpdateMaster <|.. AttachedList
-IInsertMaster <|.. AttachedList
-IUpdateMaster <|.. LabelDbDomesticProduct
-IInsertMaster <|.. LabelDbDomesticProduct
-IUpdateMaster <|.. LabelDbExportProduct
-IInsertMaster <|.. LabelDbExportProduct
-IUpdateMaster <|.. NHM
-IInsertMaster <|.. NHM
+IUpdateMaster <|.. LabelDbForDomestic
+IUpdateMaster <|.. LabelDbForExport
+IUpdateMaster <|.. Nhm
 
-NHM o-- LabelIdentification
-LabelDbExportProduct o-- CanForExport
-CanForExport o-- GhsDb
+Nhm o-- LabelIdentification
+LabelDbForExport o-- CalcFireAndFishKubun
 
-
+```

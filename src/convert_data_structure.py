@@ -41,9 +41,26 @@ class ConvertDataStructure:
 
 
     @staticmethod
-    def convert_dict_dict_to_list(dict: Dict[str, Dict[str, bool]],
+    def convert_dict_dict_dict_to_list(dict: Dict[str, Dict[str, Dict[str, bool]]],
                                   outkey: str)-> List[str]:
         list: List[str] = []
         for key in dict['cans_for_export']:
             list.append(key)
         return list
+
+
+    @staticmethod
+    def convert_2d_list_to_1d_dict(cols: List[str], data: List[List[str]],
+                                   key_col: str, val_col: str)-> Dict[str, str]:
+        result: Dict[str, str] = {}
+        key_idx: int = GetIdx.get_idx(cols, key_col)
+        val_idx: int = GetIdx.get_idx(cols, val_col)
+        if key_idx == -1 or val_idx == -1:
+            raise ogaColumnIndexError(
+                    f'{key_col}と{val_col}のカラムが不正です。'
+            )
+
+        for line in data:
+            result[line[key_idx]] = line[val_idx]
+
+        return result

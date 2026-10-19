@@ -1,0 +1,11 @@
+from src.label_identification import LabelIdentification
+
+def test_create_tokuiCDs_dict():
+    label_identification = LabelIdentification(
+        ['mukesaki_kbn', 'nonyusaki_kbn', 'nonyuAlphabet', 
+         'nonyuNoMin', 'nonyuNoMax'],
+        ['04', '09', 'THS', '1', '12'],
+        '豊通', 'タイスタンレー'
+    )
+    result = label_identification.create_tokuiCDs_dict()
+    assert result == {'T0210': ['THB01', 'THB02']}

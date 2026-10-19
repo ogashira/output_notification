@@ -271,17 +271,16 @@ def press_start():
         messagebox.showerror("エラー", f"項目は全て入力してください。")
         return
 
-    try:
-        from flow import Flow
-        Flow.start( ui_infos)
+    from flow import Flow
+    Flow.start(ui_infos)
 
-        root.destroy()
-    except Exception as e:
-        messagebox.showerror("エラー", f"エラーが発生しました:\n{e}")
+    root.destroy()
+
 
 def press_cancel():
     """Cancelボタンが押された時の処理"""
     root.destroy()
+
 
 def run(hinbans: List[str], mukesakis_export: List[str], 
         nonyusakis: List[str], seihinLabels: List[str], 

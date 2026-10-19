@@ -1,7 +1,13 @@
-from typing import Dict, TYPE_CHECKING, Any, List
+from typing import Dict, TYPE_CHECKING, Any, List, Tuple, Optional
 import platform
 import sys
 from fetch_data_for_list import IFetchDataForList
+from IUpdate_master import IUpdateMaster
+from get_idx import GetIdx
+from filter_data import FilterData
+from label_identification import LabelIdentification
+from nhm import Nhm
+from calc_fire_and_fish_kubun import CalcFireAndFishKubun
 
 # 実行時にはインポートせず、型チェックの為だけに書く
 if TYPE_CHECKING:
@@ -131,9 +137,193 @@ class InstanceFactory:
         return cls._instances[ins_name]
 
 
+
     @classmethod
-    def get_UiInfo(cls, ui_infos: Dict[str, str]) -> 'UiInfo':
-        from ui_info import UiInfo
-        return UiInfo(ui_infos)
+    def get_HinbanMaster(cls, hinban: str, hin_name: str, 
+                         order_or_stocked: str) -> IUpdateMaster:
+        from hinban_master import HinbanMaster
+        hinban_master: IUpdateMaster = HinbanMaster(hinban, hin_name, 
+                                                    order_or_stocked,
+                                                    cls._cnxn_effit)
+        return hinban_master
+
+
+
+
+    @classmethod
+    def get_fetchFishKubun(cls) -> IFetchDataForList:
+        from fetch_data_for_list import FetchFishKubun
+        cls.get_sql_server_tss()
+        fetchFishKubun: IFetchDataForList = FetchFishKubun(cls._cnxn_tss)
+        return fetchFishKubun
+
+    @classmethod
+    def get_fetchFireKubun(cls) -> IFetchDataForList:
+        from fetch_data_for_list import FetchFireKubun
+        cls.get_sql_server_tss()
+        fetchFireKubun: IFetchDataForList = FetchFireKubun(cls._cnxn_tss)
+        return fetchFireKubun
+
+    @classmethod
+    def get_fetchUnsouKubun(cls) -> IFetchDataForList:
+        from fetch_data_for_list import FetchUnsouKubun
+        cls.get_sql_server_tss()
+        fetchUnsouKubun: IFetchDataForList = FetchUnsouKubun(cls._cnxn_tss)
+        return fetchUnsouKubun
+
+    '''
+    LabalIdentificationのインスタンスを作成 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    '''
+    @classmethod
+    def get_fetchLabelIdentificatiion(cls, 
+                        mukesaki_kbn, nonyusaki_kbn) -> IFetchDataForList:
+        from fetch_data_for_list import FetchLabelIdentification
+
+
+        cls.get_sql_server_tss()
+        return FetchLabelIdentification(cls._cnxn_tss, 
+                                        mukesaki_kbn, nonyusaki_kbn)
+
+    @classmethod
+    def get_LabelIdentificationData(cls, mukesaki_kbn: str,
+                                    nonyusaki_kbn: str)-> Tuple:
+
+        # FetchLabelIdentification:IFetchDataForListのインスタンスを作成
+        fetch_label_identification:IFetchDataForList = \
+            cls.get_fetchLabelIdentificatiion(
+                mukesaki_kbn, nonyusaki_kbn)
+
+        # fetch_label_identification.fetch_data()の戻り値を取得
+        col, data = fetch_label_identification.fetch_data()
+
+        # dataは２次元リストで要素数は１なので、それを取得
+        # データがない場合は、一次元リスト[]が返る
+        if len(data) == 0:
+            return col, []
+        return col, data[0]
+
+
+    @classmethod
+    def get_LabelIdentification(cls, ui_infos: Dict[str, Any],
+                                mukesaki_col: List[str], 
+                                mukesaki_data: List[List[str]],
+                                nonyusaki_col: List[str],
+                                nonyusaki_data: List[List[str]]
+                                )-> Optional[LabelIdentification]:
+
+        if mukesaki_data == []:
+            return None
+        if nonyusaki_data == []:
+            return None
+
+        ui_mukesaki: str = ui_infos['mukesaki']  # 豊通
+        ui_nonyusaki: str = ui_infos['nonyusaki'] # タイスタンレー
+
+        mukesaki_kbn:str = ""
+        nonyusaki_kbn:str = ""
+        tokuiCD:str = ""
+
+        # mukesakis = ['豊通', '04', 'T1210']
+        mukesakis: List[str] = FilterData.filter_data_from_2d_list(
+                                            mukesaki_data, 
+                                            mukesaki_col, 
+                                            'mukesaki_nam',
+                                            ui_mukesaki)
+        mukesaki_kbn_idx:int = GetIdx.get_idx(mukesaki_col, 'mukesaki_kbn')
+        mukesaki_kbn = mukesakis[mukesaki_kbn_idx]
+
+        tokuiCD_idx:int = GetIdx.get_idx(mukesaki_col, 'tokuiCD')
+        tokuiCD = mukesakis[tokuiCD_idx]
+
+        # nonyusakis = [タイスタンレー', '09']
+        nonyusakis: List[str] = FilterData.filter_data_from_2d_list(
+                                            nonyusaki_data, 
+                                            nonyusaki_col, 
+                                            'nonyusaki_nam',
+                                            ui_nonyusaki)
+        nonyusaki_kbn_idx:int = GetIdx.get_idx(nonyusaki_col, 'nonyusaki_kbn')
+        nonyusaki_kbn = nonyusakis[nonyusaki_kbn_idx]
+
+        col, data = \
+                cls.get_LabelIdentificationData(mukesaki_kbn, nonyusaki_kbn)
+                
+        if data == []:
+            raise Exception(f"\nラベル識別コードに {ui_mukesaki}:{ui_nonyusaki} が存在しません。")
+
+        label_identification:LabelIdentification = \
+                LabelIdentification(col, data, tokuiCD, ui_nonyusaki)
+
+        return label_identification
+    '''
+    label_identificationのインスタンスを作成 ~ここまで~ >>>>>>>>>>>>>>>>>>>>>>>>
+    '''
+
+
+    @classmethod
+    def get_Nhm(cls, label_identification: LabelIdentification,
+                hinban: str, hin_name: str) -> Nhm:
+        nhm: Nhm = Nhm(label_identification, hinban, hin_name)
+        return nhm
+
+
+    '''
+    LabelDbForExportのインスタンスを作成 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    '''
+    @classmethod
+    def get_fetchGhsDb(cls, hinban: str) -> IFetchDataForList:
+        from fetch_data_for_list import FetchGhsDb
+        cls.get_sql_server_tss()
+        return FetchGhsDb(cls._cnxn_tss, hinban)
+
+    @classmethod
+    def get_CalcFireAndFishKubun(cls, ghs_col, ghs_data, 
+                                 can_hinban, is_exist_fire_print, 
+                                 is_exist_fish_print) -> CalcFireAndFishKubun:
+
+        calc_fireAndFishKubun: CalcFireAndFishKubun = \
+            CalcFireAndFishKubun(ghs_col, ghs_data, 
+                                 can_hinban, is_exist_fire_print, 
+                                 is_exist_fish_print
+            )
+        return calc_fireAndFishKubun
+
+
+    @classmethod
+    def get_LabelDbForExport(cls, hinban: str, can_hinban: str,
+                             is_exist_fire_print: bool,
+                             is_exist_fish_print: bool,
+                             dic_kbns: Dict[str,Dict[str,str]],
+                             ) -> IUpdateMaster:
+
+        from label_db_for_export import LabelDbForExport
+
+        fetch_ghs_db: IFetchDataForList = cls.get_fetchGhsDb(hinban)
+        ghs_col, ghs_datas = fetch_ghs_db.fetch_data()
+        if ghs_datas != []:
+            ghs_data = ghs_datas[0]
+        else:
+            ghs_data = []
+
+        if ghs_data == []:
+            raise Exception(f"\nghs_dbに {hinban} が存在しません。")
+
+        calc_fire_and_fish_kubun: CalcFireAndFishKubun = \
+            cls.get_CalcFireAndFishKubun(ghs_col, ghs_data,
+                                 can_hinban, is_exist_fire_print, 
+                                 is_exist_fish_print)
+
+        label_db_for_export: LabelDbForExport = LabelDbForExport(
+            hinban, dic_kbns
+        )
+        return label_db_for_export
+
+    
+
+    '''
+        sqlQuery = ("SELECT YS_CI_KOKUREN_BUNRUI AS 'ghs_class',"
+                    " YS_CI_YOKI_HONO AS 'ghs_fire',"
+                    " YS_CI_YOKI_KANKYO_YUGAI AS 'ghs_fish'"
+    LabelDbForExportのインスタンスを作成 ~ ここまで~ >>>>>>>>>>>>>>>>>>>>>
+    '''
 
 

@@ -14,4 +14,8 @@ class FilterData:
         # resultは二次元リスト（要素はひとつのリスト）
         result = [sublist for sublist in data if sublist[idx] == str_to_filter]
 
+        if not result:
+            return result
+        # 空ならば、空のリストを返す。存在すれば、リストの最初を返す
+
         return result[0]
