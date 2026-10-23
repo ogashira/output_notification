@@ -219,10 +219,24 @@ class Flow:
                         hinban, can, is_exist_fire_print, is_exist_fish_print,
                         dic_kbns
                     )
+                label_db_for_export.update_master(ui_infos)
             except Exception as e:
                 print(f'{e} label_dbにデータを追加できませんでした。')
 
 
+        # LabelDbForDomesticのインスタンスを作成
+        if not ui_infos['is_export']:
+            try:
+                label_db_for_domestic: IUpdateMaster = \
+                    InstanceFactory.get_LabelDbForDomestic(
+                        hinban, dic_kbns
+                    )
 
+                label_db_for_domestic.update_master(ui_infos)
+            except Exception as e:
+                print(f'{e} label_dbにデータを追加できませんでした。')
+
+
+        print("プログラム終了です")
 
         InstanceFactory.delete_cnxn()

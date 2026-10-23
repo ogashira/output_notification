@@ -1,6 +1,7 @@
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from unittest.mock import MagicMock
+from src.instance_factory import InstanceFactory
 
 
 @pytest.fixture(scope="function")
@@ -30,3 +31,19 @@ def mock_cnxn(monkeypatch):
     yield mock_cnxn, mock_cursor
 
 
+@pytest.fixture(scope="session", autouse=True)
+def close_db_connections_after_all_tests():
+    """
+    全テストの実行前後に自動実行されるフィクスチャ。
+    yield より前がテスト開始前、yield より後が全テスト終了後に実行されます。
+    """
+    yield
+    # 全テスト終了時に接続をクローズ
+    InstanceFactory.delete_cnxn()
+
+'''
+• scope="session": テストセッション全体で1回だけ有効になります。
+• autouse=True: 各テスト関数の引数に書かなくても、自動的に適用されます。
+• yield: テスト実行を挟み、全テストが完了した直後に InstanceFactory.
+delete_cnxn() が呼び出されます。
+''' 

@@ -25,7 +25,8 @@ class CalcFireAndFishKubun:
 
         self.class_rank = ghs_data[class_idx] # 'ｸﾗｽ3'
 
-    def calc_fire_kubun(self) -> str:
+
+    def calc_fire_nam(self) -> str:
         if not self.is_need_fire: # ファイヤーマークが不要の場合
             if self.class_rank == 'ｸﾗｽ3':
                 return ''
@@ -40,8 +41,16 @@ class CalcFireAndFishKubun:
                     return self.class_rank
             if not self.is_exist_fire_print: # プリントしていない場合
                 return '○'
+        return 'hoge' # どこにも引っ掛からない場合
 
-        return 'hoge'
 
-    def calc_fish_kubun(self) -> str:
-        return ''
+    def calc_fish_nam(self) -> str:
+        if not self.is_need_fish: # 魚マークが不要の場合
+            return ''
+        if self.is_need_fish: # 魚マークが必要な場合
+            if self.is_exist_fish_print: # 魚印刷してある場合
+                return 'F'
+            if not self.is_exist_fish_print: # 魚印刷していない場合
+                return '○'
+            # さらに、この後LabelDbForExportで、airだったら、''になる。
+        return 'hoge' # どこにも引っ掛からない場合

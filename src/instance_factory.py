@@ -313,17 +313,29 @@ class InstanceFactory:
                                  is_exist_fish_print)
 
         label_db_for_export: LabelDbForExport = LabelDbForExport(
-            hinban, dic_kbns
+            hinban, dic_kbns, calc_fire_and_fish_kubun, cls._cnxn_tss
         )
         return label_db_for_export
 
-    
-
     '''
-        sqlQuery = ("SELECT YS_CI_KOKUREN_BUNRUI AS 'ghs_class',"
-                    " YS_CI_YOKI_HONO AS 'ghs_fire',"
-                    " YS_CI_YOKI_KANKYO_YUGAI AS 'ghs_fish'"
     LabelDbForExportのインスタンスを作成 ~ ここまで~ >>>>>>>>>>>>>>>>>>>>>
     '''
 
+    '''
+    LabelDbForDomesticのインスタンスを作成 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    '''
+    @classmethod
+    def get_LabelDbForDomestic(cls, hinban: str,
+                             dic_kbns: Dict[str,Dict[str,str]],
+                             ) -> IUpdateMaster:
 
+        from label_db_for_domestic import LabelDbForDomestic
+
+        label_db_for_domestic: LabelDbForDomestic = LabelDbForDomestic(
+            hinban, dic_kbns, cls._cnxn_tss
+        )
+        return label_db_for_domestic
+
+    '''
+    LabelDbForDomesticのインスタンスを作成 ~ ここまで~ >>>>>>>>>>>>>>>>>>>>>
+    '''
