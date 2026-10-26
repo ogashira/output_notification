@@ -41,9 +41,9 @@ def close_db_connections_after_all_tests():
     # 全テスト終了時に接続をクローズ
     InstanceFactory.delete_cnxn()
 
-'''
-• scope="session": テストセッション全体で1回だけ有効になります。
-• autouse=True: 各テスト関数の引数に書かなくても、自動的に適用されます。
-• yield: テスト実行を挟み、全テストが完了した直後に InstanceFactory.
-delete_cnxn() が呼び出されます。
-''' 
+    '''
+    • scope="session": テストセッション全体で1回だけ有効になります。
+    • autouse=True: 各テスト関数の引数に書かなくても、自動的に適用されます。
+    • yield: テスト実行を挟み、全テストが完了した直後に InstanceFactory.
+    delete_cnxn() が呼び出されます。
+    ''' 

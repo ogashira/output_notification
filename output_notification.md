@@ -145,9 +145,9 @@
             1. GZK01からアルファベットと数字を分けて、アルファベットを取得する。
     1. 出荷時添付リスト.xlsxに必要な情報があるかを調べる。
         1. 輸出製品の場合はスルー。
-        1. ui_infosのtokuiCD,nonyuCD,hinban,formatが一致したらスルー。
-        1. 無い、または一致しない場合は、出荷時添付リスト.xlsxに入力する。
-        1. 発行部署、得意先を求めて、出荷時添付リスト.xlsxに入力する。
+        1. 国内製品でも成績書が不要の場合はスルー。
+        1. ui_infosのtokuiCD,nonyuCD,hinbanが一致したらcoaFormat, 発行部署を更新する。
+        1. 無い、または一致しない場合は、出荷時添付リスト.xlsxに新たに追加する。
     1. label_dbに既にデータがあるかを調べる。
         1. 国内製品の場合。
             1. (本社_大阪)、品番が一致するデータがあるか？
@@ -189,11 +189,13 @@ class IUpdateMaster{
 class HinbanMaster{
     - hiban_master_data:List[List[str]]
     - hinban:str
-    - hinname:str
+    - hin_name:str
     - order_or_stocked:str
-    + update_master():None
+    - cnxn:pyodbc.Connection
+    + update_master(ui_infos):None
 }
 class CalcFireAndFishKubun{
+    - ghs_col:List[str]
     - ghs_data:List[str]
     - is_exist_fire_print: bool
     - is_exist_fish_print: bool
@@ -201,6 +203,10 @@ class CalcFireAndFishKubun{
     + calc_fish_kubun():str
 }
 class LabelIdentification{
+    - col:List[str]
+    - data:List[str]
+    - tokuiCD:str
+    - ui_nonyusaki:str
     - mukesaki_kbn:str
     - nonyusaki_kbn:str
     - nonyusaki_str:str
@@ -217,27 +223,25 @@ class Nhm{
     - hin_name: str
     - nhm_mukesaki:str
     - label_identification:LabelIdentification
-    + update_master():None
+    + update_master(ui_infos):None
 }
 class AttachedList{
-    - attached_list_data:List[List[str]]
-    - tokuiCD:str
-    - nonyuCD:str
-    - tokuiName:str
+    - path:str
+    - wb:Workbook
+    - ws:Worksheet
     - hinban:str
-    - hinName:str
-    - issuing_department:str
-    - coa_format:str
-    - recipient_name:str
-    - bikou: str
-    + isexist_attachedlist():bool 
-    + update_master():None
+    - hin_name:str
+    - coaFormat_col:List[str]
+    - coaFormat_data:List[List[str]]
+    - columns:List[str]
+    - data_list:List[List[str]]
+    + update_master(ui_infos):None
 }
 class LabelDbForDomestic{
     - mukesaki_kbns:List~str~
     - hinban: str
     - label_kbn: str
-    + update_master():None
+    + update_master(ui_infos):None
 }
 class LabelDbForExport{
     - mukesaki_kbn: str
@@ -247,7 +251,7 @@ class LabelDbForExport{
     - label_kbn: str
     - label_fish_kbn: str
     - label_fire_kbn: str
-    + update_master():None
+    + update_master(ui_infos):None
 }
 
 IUpdateMaster <|.. HinbanMaster

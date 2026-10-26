@@ -237,6 +237,16 @@ class Flow:
                 print(f'{e} label_dbにデータを追加できませんでした。')
 
 
-        print("プログラム終了です")
+        # AttachedListのインスタンスを作成
+        if not ui_infos['is_export'] and ui_infos['is_coa_need']:
+            try:
+                attached_list: IUpdateMaster = \
+                    InstanceFactory.get_AttachedList(hinban, hin_name, cls._coaformat_col, cls._coaformat_data)
+                attached_list.update_master(ui_infos)
+            except Exception as e:
+                print(f'{e} AttachedListにデータを追加できませんでした。')
+
+
+        print("\nプログラム終了です")
 
         InstanceFactory.delete_cnxn()

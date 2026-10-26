@@ -339,3 +339,23 @@ class InstanceFactory:
     '''
     LabelDbForDomesticのインスタンスを作成 ~ ここまで~ >>>>>>>>>>>>>>>>>>>>>
     '''
+
+    '''
+    AttachedListのインスタンスを作成 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    '''
+    @classmethod
+    def get_AttachedList(cls, hinban: str, hin_name: str,
+                         coaFormat_col: List[str], # 向先_ｼｰﾄ表のデータ
+                         coaFormat_data: List[List[str]], # 向先_ｼｰﾄ表のデータ
+                         ) -> IUpdateMaster:
+
+        from attached_list import AttachedList
+
+
+        attached_list: AttachedList = AttachedList(
+            hinban, hin_name, coaFormat_col, coaFormat_data
+        )
+        return attached_list
+    '''
+    AttachedListのインスタンスを作成 ~ ここまで ~>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    '''
