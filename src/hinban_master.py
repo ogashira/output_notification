@@ -51,11 +51,11 @@ class HinbanMaster(IUpdateMaster):
                 cursor.execute(sql, params)
 
                 # 影響を受けた行数の確認
-                print(fr"\n品番マスター更新された行数: {cursor.rowcount}")
+                print(f"\n品番マスター更新された行数: {cursor.rowcount}")
 
                 # 変更を確定（コミット）
                 self.cnxn.commit()
-                print(f"{self.hinban} のアップデートが正常に完了しました。")
+                print(f"{self.hinban} の品番マスターアップデートが正常に完了しました。")
 
         except Exception as e:
             print(f"\n品番マスターアップデートで予期せぬエラーが発生しました: {e}")

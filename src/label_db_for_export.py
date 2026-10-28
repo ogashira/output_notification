@@ -83,7 +83,7 @@ class LabelDbForExport(IUpdateMaster):
             next_sequence_int = current_max_int + 1
             next_sequence_str = f"{next_sequence_int:010}" # 10桁のゼロパディング
 
-            print(f"現在の最大連番: {current_max_int}, 次の連番: {next_sequence_str}")
+            print(f"\n現在の最大連番: {current_max_int}, 次の連番: {next_sequence_str}")
 
             # 2. 5つのカラムにデータを挿入するSQL
             # カラム名と ? の数を実際のテーブル構成に合わせてください
@@ -132,7 +132,7 @@ class LabelDbForExport(IUpdateMaster):
             cursor.execute(insert_sql, params)
 
             self.cnxn.commit()
-            print(f"\nlabel_dbに {ship_or_air} のデータを挿入しました。")
+            print(f"label_dbに {ship_or_air} のデータを挿入しました。")
 
         except Exception as e:
             print(f"予期せぬエラーが発生しました: {e}")
@@ -235,7 +235,7 @@ class LabelDbForExport(IUpdateMaster):
             cursor.execute(update_sql, params)
 
             self.cnxn.commit()
-            print(f"\nlabel_dbの {ship_or_air} のデータを更新しました。")
+            print(f"label_dbの {ship_or_air} のデータを更新しました。")
 
         except Exception as e:
             print(f"予期せぬエラーが発生しました: {e}")
